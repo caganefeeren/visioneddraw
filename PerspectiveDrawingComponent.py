@@ -221,6 +221,8 @@ class PerspectiveDrawingComponent:
         print("Criterion #4: " + str(criterion4))
 
 
+        
+
         cv2.imshow("Output Image", image)
         cv2.waitKey(0)
     
