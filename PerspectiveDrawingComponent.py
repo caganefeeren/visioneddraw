@@ -6,7 +6,8 @@ import numpy
 class PerspectiveDrawingComponent:
 
     REJECT_DEGREE_TH = 4.0
-    THRESHOLD = 25
+    TILT_TH = 25
+    HORIZONTAL_VERTICAL_TH = 7
 
     # Line Extraction Methods
     # Advanced line detection system, used for criterion #3 and #4
@@ -141,7 +142,7 @@ class PerspectiveDrawingComponent:
                 intersectionY = y1 - tilt * x1
                 distance = abs(tilt * vanishingX - vanishingY + intersectionY) / numpy.sqrt(tilt ** 2 + 1)
             
-            if distance < self.THRESHOLD and verticalDifference > 20 and horizontalDifference > 20:
+            if distance < self.TILT_TH and verticalDifference > 20 and horizontalDifference > 20:
                 cv2.line(image, (x1, y1), (x2,y2), (0, 255, 255), 2)
                 totalTilt += abs(tilt) 
                 linesTowardsVanishingPoint += 1
@@ -164,11 +165,10 @@ class PerspectiveDrawingComponent:
             x2 = int(round(line[0][2]))
             y2 = int(round(line[0][3]))
 
-            # TODO: Implement A THRESHOLD HERE
-            if abs(x1 - x2) < 7:
+            if abs(x1 - x2) < self.HORIZONTAL_VERTICAL_TH:
                 verticalLines += 1
                 cv2.line(image, (x1, y1), (x2, y2), (0, 140, 255), 2)
-            elif abs(y1 - y2) < 7: 
+            elif abs(y1 - y2) < self.HORIZONTAL_VERTICAL_TH: 
                 horizontalLines += 1
                 cv2.line(image, (x1, y1), (x2, y2), (0, 140, 255), 2)
         
@@ -181,12 +181,55 @@ class PerspectiveDrawingComponent:
         
         return finalScore
 
+    # Optimizing the image before scoring it's histogram is taken. 
+    def OptimizeImage(self, image, histogramPercentage=2):
+        
+        grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        histogram = cv2.calcHist([grayscaleImage], [0], None, [256], [0,256])
+        histogramLength = len(histogram)
+
+        accumulator = []
+        accumulator.append(float(histogram[0]))
+
+        for i in range(1, histogramLength):
+            accumulator.append(accumulator[i - 1] + float(histogram[i]))
+
+        maximum = accumulator[-1]
+        histogramPercentage *= (maximum / 20.0)
+        histogramPercentage /= 2.0
+
+        minimumGrayscale = 0
+
+        while accumulator[minimumGrayscale] < histogramPercentage:
+            minimumGrayscale += 1
+        
+        maximumGrayscale = histogramLength - 1
+
+        while accumulator[maximumGrayscale] >= (maximum - histogramPercentage):
+            maximumGrayscale -= 1
+
+        alpha = 255 / (maximumGrayscale - minimumGrayscale)
+        beta = -minimumGrayscale * alpha
+        autoResult = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
+
+        return (autoResult, alpha, beta)
+
+    def FindLightDarkBalance(self, image):
+
+        autoResult, alpha, beta = self.OptimizeImage(image)
+
+        finalImage = cv2.calcHist([autoResult], [0], None, [256], [0,256])
+
+        cv2.imshow("Output Image", autoResult)
+        cv2.waitKey(0)
 
     # Main Method
     def FinalVerdict(self, imagePath):
 
         image = cv2.imread(imagePath)
         imageLSD = cv2.imread(imagePath, 0)
+
+        self.FindLightDarkBalance(image)
 
         houghLines = self.GetLinesHoughLinesP(image)
         segmentLines = self.GetLinesLineSegmentDetector(imageLSD)
@@ -218,10 +261,7 @@ class PerspectiveDrawingComponent:
         print("Criterion #1: " + str(criterion1))
         print("Criterion #2: " + str(criterion2))
         print("Criterion #3: " + str(criterion3))
-        print("Criterion #4: " + str(criterion4))
-
-
-        
+        print("Criterion #4: " + str(criterion4))        
 
         cv2.imshow("Output Image", image)
         cv2.waitKey(0)

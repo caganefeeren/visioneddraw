@@ -1,7 +1,7 @@
 import PerspectiveDrawingComponent
 
 picturesPath = "./Samples/"
-pictures = ["image.png", "image2.png", "image3.png", "image4.png", "image5.png", "image6.png", "image7.png"]
+pictures = ["image.png", "image2.png", "image3.png", "image4.png", "image5.png", "image6.png", "image7.png", "image8.png"]
 
 vpc = PerspectiveDrawingComponent.PerspectiveDrawingComponent()
 
