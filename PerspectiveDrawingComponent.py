@@ -62,8 +62,7 @@ class PerspectiveDrawingComponent:
         lines = cv2.HoughLinesP(edges, 1, numpy.pi / 180, 20, 10, 15)
 
         if lines is None:
-            print("No lines were found, can't detect Vanishing Point of the specified image.")
-            sys.exit()
+            return None
 
         filteredLines = self.FilterLines(lines)
 
@@ -181,47 +180,38 @@ class PerspectiveDrawingComponent:
         
         return finalScore
 
-    # Optimizing the image before scoring it's histogram is taken. 
-    def OptimizeImage(self, image, histogramPercentage=2):
-        
-        grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        histogram = cv2.calcHist([grayscaleImage], [0], None, [256], [0,256])
-        histogramLength = len(histogram)
-
-        accumulator = []
-        accumulator.append(float(histogram[0]))
-
-        for i in range(1, histogramLength):
-            accumulator.append(accumulator[i - 1] + float(histogram[i]))
-
-        maximum = accumulator[-1]
-        histogramPercentage *= (maximum / 20.0)
-        histogramPercentage /= 2.0
-
-        minimumGrayscale = 0
-
-        while accumulator[minimumGrayscale] < histogramPercentage:
-            minimumGrayscale += 1
-        
-        maximumGrayscale = histogramLength - 1
-
-        while accumulator[maximumGrayscale] >= (maximum - histogramPercentage):
-            maximumGrayscale -= 1
-
-        alpha = 255 / (maximumGrayscale - minimumGrayscale)
-        beta = -minimumGrayscale * alpha
-        autoResult = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
-
-        return (autoResult, alpha, beta)
-
     def FindLightDarkBalance(self, image):
 
-        autoResult, alpha, beta = self.OptimizeImage(image)
+        grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        finalImage = cv2.calcHist([autoResult], [0], None, [256], [0,256])
+        grayHistogram = cv2.calcHist([grayscaleImage], [0], None, [256], [0, 256])
 
-        cv2.imshow("Output Image", autoResult)
-        cv2.waitKey(0)
+        totalValue = 0
+        totalPixels = 0
+
+        for i in range(1, len(grayHistogram) + 1):
+
+            totalValue += (i - 1) * grayHistogram[i - 1][0]
+            totalPixels += grayHistogram[i - 1][0]
+
+        result = totalValue / totalPixels
+        deviation = abs(128 - result)
+
+        score = 0
+
+        if 100 > deviation:
+
+            if deviation > 50:
+                score = 5
+            elif deviation > 40:
+                score = 10
+            elif deviation > 30:
+                score = 15
+            elif deviation > 20:
+                score = 20
+
+        return score
+
 
     # Main Method
     def FinalVerdict(self, imagePath):
@@ -229,12 +219,15 @@ class PerspectiveDrawingComponent:
         image = cv2.imread(imagePath)
         imageLSD = cv2.imread(imagePath, 0)
 
-        self.FindLightDarkBalance(image)
+        criterion5 = self.FindLightDarkBalance(image)
 
         houghLines = self.GetLinesHoughLinesP(image)
         segmentLines = self.GetLinesLineSegmentDetector(imageLSD)
 
-        vanishingPoint = self.FindVanishingPoint(houghLines)
+        if houghLines == None:
+            vanishingPoint = None
+        else:
+            vanishingPoint = self.FindVanishingPoint(houghLines)
 
         # Criterions #1, #2 and #3 can't be calculated if there isn't a vanishing point.
         if vanishingPoint == None:
@@ -249,7 +242,10 @@ class PerspectiveDrawingComponent:
         if criterion3 > 20:
             criterion3 = 20
 
-        criterion4 = self.FindHorizontalAndVerticalLines(image, segmentLines)
+        if segmentLines is None:
+            criterion4 = 0
+        else:
+            criterion4 = self.FindHorizontalAndVerticalLines(image, segmentLines)
 
 
         # The drawings for criterions #1 and #2 
@@ -261,7 +257,8 @@ class PerspectiveDrawingComponent:
         print("Criterion #1: " + str(criterion1))
         print("Criterion #2: " + str(criterion2))
         print("Criterion #3: " + str(criterion3))
-        print("Criterion #4: " + str(criterion4))        
+        print("Criterion #4: " + str(criterion4))  
+        print("Criterion #5: " + str(criterion5))
 
         cv2.imshow("Output Image", image)
         cv2.waitKey(0)
