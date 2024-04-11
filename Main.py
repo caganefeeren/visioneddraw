@@ -1,20 +1,24 @@
 import PerspectiveDrawingComponent
+import os 
 
-import cv2
+def StartPerspectiveMode():
 
-picturesPath = "./Samples/"
-pictures = ["image.png", "image2.png", "image3.png", "image4.png", "image5.png", "image6.png", "image7.png",
-             "image8.png", "image9.png", "image10.png"]
+    print("Welcome to the Perspective Drawing Mode! \n")
 
-vpc = PerspectiveDrawingComponent.PerspectiveDrawingComponent()
+    print("\033[31;3m# DISCLAIMER: This is demo software. Some features may not work as intended.")
+    print("\033[33;3m# SUGGESTION: Take the photos in a well-lit enviorment for fair grading.\033[0m")
 
-def StartAnalysis():
-    PictureRoulette(pictures)
+    LoadFilePerspectiveMode()
 
+def LoadFilePerspectiveMode():
 
-def PictureRoulette(pictures):
-    for picture in pictures:
-
-        vpc.FinalVerdict(picturesPath + picture)
+    path = input("\nPlease Drag And Drop A File Or Enter The Location Manually: \n\n")
         
-StartAnalysis()
+    process = pdc.ScoreCriterions(path)
+
+    if (process == 0):
+        LoadFilePerspectiveMode()
+
+        
+pdc = PerspectiveDrawingComponent.PerspectiveDrawingComponent()
+StartPerspectiveMode()
