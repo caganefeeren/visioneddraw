@@ -1,9 +1,19 @@
 import cv2
-import sys
+import os
 import math
 import numpy
 
 class PerspectiveDrawingComponent:
+
+    # COLOR INFORMATION
+    PRIORTY_HIGH = "\033[31;3m"
+    PRIORTY_MEDIUM = "\033[33;3m"
+    PRIORTY_LOW = "\033[32;3m"
+    SCORING_HIGH = "\033[32;1m"
+    SCORING_MEDIUM = "\033[33;1m"
+    SCORING_LOW = "\033[31;1m"
+    FINISH = "\033[0m" 
+
 
     REJECT_DEGREE_TH = 4.0
     TILT_TH = 25
@@ -33,6 +43,8 @@ class PerspectiveDrawingComponent:
             else:
                 m = 20000000
 
+            numpy.seterr(over="ignore")
+            
             c = y2 - m*x2
 
             # theta will contain values between -90 -> +90
@@ -79,6 +91,9 @@ class PerspectiveDrawingComponent:
         vanishingPoint = None
         minError = 20000000000
 
+        if lines is None:
+            return vanishingPoint
+
         # This algorith is too hard to explain.
         for i in range(len(lines)):
             for j in range(i+1, len(lines)):
@@ -119,6 +134,8 @@ class PerspectiveDrawingComponent:
         linesTowardsVanishingPoint = 0
         tiltAverage = 0
 
+        if (lines is None):
+            return tiltAverage
 
         for line in lines:
             x1 = int(round(line[0][0]))
@@ -142,14 +159,18 @@ class PerspectiveDrawingComponent:
                 distance = abs(tilt * vanishingX - vanishingY + intersectionY) / numpy.sqrt(tilt ** 2 + 1)
             
             if distance < self.TILT_TH and verticalDifference > 20 and horizontalDifference > 20:
-                cv2.line(image, (x1, y1), (x2,y2), (0, 255, 255), 2)
                 totalTilt += abs(tilt) 
                 linesTowardsVanishingPoint += 1
 
         if linesTowardsVanishingPoint > 0:
             tiltAverage = totalTilt / linesTowardsVanishingPoint
 
-        return tiltAverage
+        if tiltAverage > 1:
+            tiltAverage = 20
+        else:
+            tiltAverage *= 20
+
+        return round(tiltAverage)
 
     def FindHorizontalAndVerticalLines(self, image, lines):
         
@@ -201,13 +222,13 @@ class PerspectiveDrawingComponent:
 
         if 100 > deviation:
 
-            if deviation > 50:
+            if deviation > 75:
                 score = 5
-            elif deviation > 40:
+            elif deviation > 60:
                 score = 10
-            elif deviation > 30:
+            elif deviation > 45:
                 score = 15
-            elif deviation > 20:
+            elif deviation > 30:
                 score = 20
 
         return score
@@ -254,64 +275,97 @@ class PerspectiveDrawingComponent:
             params[2] = score
 
 
-    # Main Method
-    def FinalVerdict(self, imagePath):
+    # Main Methods
+    def ScoreCriterions(self, imagePath):
+        
+        if (os.path.isfile(imagePath) == False):
+            print("\n\033[31;3m# ERROR: Couldn't find the specified file. Returning to file selection.\033[0m \n")
+            return 0
 
-        image = cv2.imread(imagePath)
-        imageLSD = cv2.imread(imagePath, 0)
+        imageVanishing = cv2.imread(imagePath)
+        imagePerspective = cv2.imread(imagePath)
+        imageBalance = cv2.imread(imagePath)
+        imageLineSegmentDetector = cv2.imread(imagePath, 0)
 
-        criterion5 = self.FindLightDarkBalance(image)
+        if (imageVanishing is None):
+            print("\n\033[31;3m# ERROR: Couldn't read the specified file. Returning to file selection.\033[0m \n")
+            return 0
+        
+        houghLines = self.GetLinesHoughLinesP(imageVanishing)
+        vanishingPoint = self.FindVanishingPoint(houghLines)
 
-        houghLines = self.GetLinesHoughLinesP(image)
-        segmentLines = self.GetLinesLineSegmentDetector(imageLSD)
+        segmentLines = self.GetLinesLineSegmentDetector(imageLineSegmentDetector)
 
-        if houghLines == None:
-            vanishingPoint = None
-        else:
-            vanishingPoint = self.FindVanishingPoint(houghLines)
-
-
-        criterion6 = 5
-
-        # Criterions #1, #2 and #3 can't be calculated if there isn't a vanishing point.
-        if vanishingPoint == None:
+        if (vanishingPoint is None):
             criterion1 = 0
             criterion2 = 0
             criterion3 = 0
+            criterion6 = 0
         else:
             criterion1 = 10
             criterion2 = 10
-            criterion3 = self.FindTiltAverage(image, segmentLines, vanishingPoint) * 20
 
-            params = [vanishingPoint, image, criterion6]
+            if (segmentLines is not None):
+                criterion3 = self.FindTiltAverage(imageLineSegmentDetector, segmentLines, vanishingPoint)
 
-            cv2.imshow("Color Perspective Image", image)
-            cv2.setMouseCallback("Color Perspective Image", self.FindColorPerpective, params)
+            criterion6 = 0
+            cv2.circle(imagePerspective, (int(round(vanishingPoint[0])), int(round(vanishingPoint[1]))), 10, (0, 0, 255), 2)
+            params = [vanishingPoint, imagePerspective, criterion6]
+
+            cv2.imshow("Color Perspective",imagePerspective)
+            cv2.setMouseCallback("Color Perspective", self.FindColorPerpective, params)
             cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
-            criterion6 = params[2]
+            if (params[2] is None):
+                criterion6 = 0
+            else:
+                criterion6 = params[2]
+                        
+            # TODO: Handle Criterion 6 here.
 
-        if criterion3 > 20:
-            criterion3 = 20
-
-        if segmentLines is None:
+        if (segmentLines is None):
             criterion4 = 0
         else:
-            criterion4 = self.FindHorizontalAndVerticalLines(image, segmentLines)
+            criterion4 = self.FindHorizontalAndVerticalLines(imageLineSegmentDetector, segmentLines)
+
+        criterion5 = self.FindLightDarkBalance(imageBalance)
+
+        results = [criterion1, criterion2, criterion3, criterion4, criterion5, criterion6]
+
+        process = self.PrintFinalVerdict(results)
+
+        # TODO: Show Final Image Here
+
+        return process
+
+    def PrintFinalVerdict(self, results):
+        typographyList = []
+
+        for i in range(0,2):
+            if results[i] == 10:
+                typographyList.append(self.SCORING_HIGH)
+            else:
+                typographyList.append(self.SCORING_LOW)
+
+        for i in range(2,6):
+            if results[i] >= 15:
+                typographyList.append(self.SCORING_HIGH)
+            elif results[i] >= 7.5:
+                typographyList.append(self.SCORING_MEDIUM)
+            else:
+                typographyList.append(self.SCORING_LOW)
 
 
-        # The drawings for criterions #1 and #2 
-        if criterion1 == 10 and criterion2 == 10:
-            cv2.circle(image, (int(vanishingPoint[0]), int(vanishingPoint[1])), 10, (255, 0, 0), -1)
-            cv2.line(image, (0, int(vanishingPoint[1])), (image.shape[1], int(vanishingPoint[1])), (255, 0, 0), 2)
+        print(f"\n------------------ FINAL VERDICT ------------------")
+        print(f"{typographyList[0]}Criterion #1: " + str(results[0]) + "/10")
+        print(f"{typographyList[1]}Criterion #2: " + str(results[1]) + "/10")
+        print(f"{typographyList[2]}Criterion #3: " + str(results[2]) + "/20")
+        print(f"{typographyList[3]}Criterion #4: " + str(results[3]) + "/20")  
+        print(f"{typographyList[4]}Criterion #5: " + str(results[4]) + "/20")
+        print(f"{typographyList[5]}Criterion #6: " + str(results[5]) + "/20")
+        print(f"{self.FINISH}---------------------------------------------------\n")
 
-        print("------------------ FINAL VERDICT ------------------")
-        print("Criterion #1: " + str(criterion1))
-        print("Criterion #2: " + str(criterion2))
-        print("Criterion #3: " + str(criterion3))
-        print("Criterion #4: " + str(criterion4))  
-        print("Criterion #5: " + str(criterion5))
-        print("Criterion #6: " + str(criterion6))
 
-        cv2.imshow("Output Image", image)
-        cv2.waitKey(0)
+        input(self.PRIORTY_LOW + "# PROCESS COMPLETED SUCCESSFULLY. Press Enter To Return Back To File Selection..." + self.FINISH)
+        return 0
