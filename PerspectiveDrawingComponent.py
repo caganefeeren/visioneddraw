@@ -212,6 +212,47 @@ class PerspectiveDrawingComponent:
 
         return score
 
+    def FindColorPerpective(self, event, x, y, flags, params):
+
+        if event == cv2.EVENT_LBUTTONDBLCLK:
+
+            grayscaleImage = cv2.cvtColor(params[1], cv2.COLOR_BGR2GRAY)
+
+            # Gets 4 points from the line. (6 in total, including the start and end positions)
+            xPositions = [x, int(round(params[0][0]))]
+            yPositions = [y, int(round(params[0][1]))]
+
+            numberOfPoints = 4
+
+            xPoints = numpy.linspace(xPositions[0], xPositions[1], numberOfPoints + 2)
+            yPoints = numpy.linspace(yPositions[0], yPositions[1], numberOfPoints + 2)
+
+            finalCoordinates = []
+
+            for i in range(len(xPoints)):
+                finalCoordinates.append((int(round(xPoints[i])), int(round(yPoints[i]))))    
+
+            colorValues = []
+
+            for i in range(1, 5):
+
+                x, y = finalCoordinates[i] 
+                regionOfInterest = grayscaleImage[y-2:y+3, x-2:x+3]
+
+                (b, g, r) = cv2.mean(regionOfInterest)[:3]
+                colorValues.append(b + g + r)
+
+            score = 5
+
+            if colorValues[0] > colorValues[1] > colorValues[2] > colorValues[3]:
+                score = 20
+            elif colorValues[0] > colorValues[1] > colorValues[2] or colorValues[1] > colorValues[2] > colorValues[3]:
+                score = 15
+            elif colorValues[0] > colorValues[1] or colorValues[1] > colorValues[2] or colorValues[2] > colorValues[3]:
+                score = 10
+            
+            params[2] = score
+
 
     # Main Method
     def FinalVerdict(self, imagePath):
@@ -229,6 +270,9 @@ class PerspectiveDrawingComponent:
         else:
             vanishingPoint = self.FindVanishingPoint(houghLines)
 
+
+        criterion6 = 5
+
         # Criterions #1, #2 and #3 can't be calculated if there isn't a vanishing point.
         if vanishingPoint == None:
             criterion1 = 0
@@ -238,6 +282,14 @@ class PerspectiveDrawingComponent:
             criterion1 = 10
             criterion2 = 10
             criterion3 = self.FindTiltAverage(image, segmentLines, vanishingPoint) * 20
+
+            params = [vanishingPoint, image, criterion6]
+
+            cv2.imshow("Color Perspective Image", image)
+            cv2.setMouseCallback("Color Perspective Image", self.FindColorPerpective, params)
+            cv2.waitKey(0)
+
+            criterion6 = params[2]
 
         if criterion3 > 20:
             criterion3 = 20
@@ -259,8 +311,7 @@ class PerspectiveDrawingComponent:
         print("Criterion #3: " + str(criterion3))
         print("Criterion #4: " + str(criterion4))  
         print("Criterion #5: " + str(criterion5))
+        print("Criterion #6: " + str(criterion6))
 
         cv2.imshow("Output Image", image)
         cv2.waitKey(0)
-    
-
