@@ -39,7 +39,9 @@ def LoadFilePerspectiveMode():
     if path == "Return":
         ModeSelect()
 
-    process = pdc.ScoreCriterions(path)
+    finalPath = path.strip("\"")
+
+    process = pdc.ScoreCriterions(finalPath)
 
     if (process == 0):
         LoadFilePerspectiveMode()
@@ -51,12 +53,13 @@ def StartBodyPartsMode():
     if path == "Return":
         ModeSelect()
 
-    bpe = BodyPartEvaluation.BodyPartEvaluation(path)
+    finalPath = path.strip("\"")
+
+    bpe = BodyPartEvaluation.BodyPartEvaluation(finalPath)
     process = bpe.find_and_label()
 
     if (process == 1):
         StartBodyPartsMode()
-
 
 pdc = PerspectiveDrawingComponent.PerspectiveDrawingComponent()
 
