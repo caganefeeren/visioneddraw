@@ -1,4 +1,5 @@
 import PerspectiveDrawingComponent
+import BodyPartEvaluation
 import os 
 
 def StartPerspectiveMode():
@@ -19,6 +20,16 @@ def LoadFilePerspectiveMode():
     if (process == 0):
         LoadFilePerspectiveMode()
 
+def EvaluateBodyParts():
+
+    path = input("\nPlease Drag And Drop A File Or Enter The Location Manually: \n\n")
+
+    process = bpe.find_and_label(path)
+
+    if (process == 0):
+        EvaluateBodyParts()
+
         
 pdc = PerspectiveDrawingComponent.PerspectiveDrawingComponent()
+bpe = BodyPartEvaluation.BodyPartEvaluation()
 StartPerspectiveMode()
