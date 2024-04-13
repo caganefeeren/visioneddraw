@@ -14,7 +14,7 @@ class PerspectiveDrawingComponent:
     SCORING_LOW = "\033[31;1m"
     FINISH = "\033[0m" 
 
-
+    # SCORING CONSTANTS
     REJECT_DEGREE_TH = 4.0
     TILT_TH = 25
     HORIZONTAL_VERTICAL_TH = 7
