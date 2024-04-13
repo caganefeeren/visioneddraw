@@ -23,7 +23,6 @@ def ModeSelect():
         print("\033[31;3m# ERROR: Couldn't find the specified mode, returning to mode select.\033[0m \n\n")
         ModeSelect()
 
-
 def StartPerspectiveMode():
 
     print("\nWelcome to the Perspective Drawing Mode! \n")
@@ -55,10 +54,10 @@ def StartBodyPartsMode():
     bpe = BodyPartEvaluation.BodyPartEvaluation(path)
     process = bpe.find_and_label()
 
-    if (process == 0):
+    if (process == 1):
         StartBodyPartsMode()
 
-        
+
 pdc = PerspectiveDrawingComponent.PerspectiveDrawingComponent()
 
 StartProjectShell()
