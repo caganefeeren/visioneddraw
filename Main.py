@@ -13,7 +13,7 @@ def ModeSelect():
     directive = input("\nType \"Perpective Mode\" or \"Body Parts Mode\" to start the components. (Type \"Exit\" to exit.)\n\n")
 
     if directive == "Exit":
-        print("Closing Program")
+        print("\n\033[31;3m# Closing Program")
         sys.exit()
     elif directive == "Perspective Mode":
         StartPerspectiveMode()
