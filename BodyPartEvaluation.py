@@ -52,11 +52,30 @@ class BodyPartEvaluation:
             cv2.rectangle(image, (x-w//2,y-h//2), (x+w//2, y+h//2), (0,255,0), 2)
             cv2.putText(image, name, (x-w//2+5, y-h//2+15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
             
-        #here comes body part ratios after the meeting
-        #cv2.putText(image, string, (10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        #cv2.putText(image, string, (10,60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        #cv2.putText(image, string, (10,90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        #here comes evaluation texts after the meeting
+        legs_head = (legs_y - (head_y - (head_h/2))) / head_h #3-4
+        legs_foot = ((foot_y + (foot_h / 2)) - (legs_y + (legs_h / 2)))/head_h #1.75-2.25
+        foot_head = ((foot_y + foot_h) - (head_y - head_h)) / head_h #5.5-6.5
+        shou_head = body_w / head_h #1.5-2 
+        armw_head = arm_w / head_h #0.3-0.5
+        armh_head = arm_h / head_h #0.75-1.25
+
+        grades = {"legs_head": evaluate(legs_head, 3,    4,    0, 10, 0.4),
+                  "legs_foot": evaluate(legs_foot, 1.75, 2.25, 0, 10, 0.4),
+                  "foot_head": evaluate(foot_head, 5.5,  6.5,  0, 10, 0.4),
+                  "shou_head": evaluate(shou_head, 1.5,  2,    0, 10, 0.4),
+                  "armw_head": evaluate(armw_head, 0.3,  0.5,  0, 10, 0.4),
+                  "armh_head": evaluate(armh_head, 0.75, 1.25, 0, 10, 0.4)}
+        
+        height, width, channels = image.shape
+
+        cv2.putText(image, f"Bacak/kafa: " + str(round(grades["legs_head"], 2)) + "/10", (width - 230, 30),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        cv2.putText(image, f"Bacak/ayak: " + str(round(grades["legs_foot"], 2)) + "/10", (width - 230, 60),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        cv2.putText(image, f"Ayak/kafa: "  + str(round(grades["foot_head"], 2)) + "/10", (width - 230, 90),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        cv2.putText(image, f"Omuz/kafa: "  + str(round(grades["shou_head"], 2)) + "/10", (width - 230, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        cv2.putText(image, f"Kol genislik/kafa: " + str(round(grades["armw_head"], 2)) + "/10", (width - 230, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        cv2.putText(image, f"Kol uzunluk/kafa: "  + str(round(grades["armh_head"], 2)) + "/10", (width - 230, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+
+        
         cv2.imshow("image", image)
         cv2.waitKey(0) 
         cv2.destroyAllWindows()
