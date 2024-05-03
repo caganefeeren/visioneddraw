@@ -68,12 +68,12 @@ class BodyPartEvaluation:
         
         height, width, channels = image.shape
 
-        cv2.putText(image, f"Bacak/kafa: " + str(round(grades["legs_head"], 2)) + "/10", (width - 230, 30),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        cv2.putText(image, f"Bacak/ayak: " + str(round(grades["legs_foot"], 2)) + "/10", (width - 230, 60),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        cv2.putText(image, f"Ayak/kafa: "  + str(round(grades["foot_head"], 2)) + "/10", (width - 230, 90),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        cv2.putText(image, f"Omuz/kafa: "  + str(round(grades["shou_head"], 2)) + "/10", (width - 230, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        cv2.putText(image, f"Kol genislik/kafa: " + str(round(grades["armw_head"], 2)) + "/10", (width - 230, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        cv2.putText(image, f"Kol uzunluk/kafa: "  + str(round(grades["armh_head"], 2)) + "/10", (width - 230, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        cv2.putText(image, f"Bacak/kafa: " + str(round(grades["legs_head"], 2)) + "/10", (10, 30),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        cv2.putText(image, f"Bacak/ayak: " + str(round(grades["legs_foot"], 2)) + "/10", (10, 60),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        cv2.putText(image, f"Ayak/kafa: "  + str(round(grades["foot_head"], 2)) + "/10", (10, 90),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        cv2.putText(image, f"Omuz/kafa: "  + str(round(grades["shou_head"], 2)) + "/10", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        cv2.putText(image, f"Kol genislik/kafa: " + str(round(grades["armw_head"], 2)) + "/10", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        cv2.putText(image, f"Kol uzunluk/kafa: "  + str(round(grades["armh_head"], 2)) + "/10", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
 
         
         cv2.imshow("image", image)
