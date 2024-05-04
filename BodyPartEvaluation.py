@@ -110,5 +110,3 @@ class BodyPartEvaluation:
             return round(min_score + (max_score - min_score) / deviation * (ratio - (min_ratio - deviation)), 2) #calculates the deviation and takes points off accordingly
         elif max_ratio < ratio:
             return round(min_score + (max_score - min_score) / deviation * ((max_ratio + deviation) - ratio), 2)
-        
-BodyPartEvaluation("Samples\Human Samples\pic3.jpg").find_and_label()
