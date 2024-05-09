@@ -88,16 +88,16 @@ class BodyPartEvaluation:
         armw_head = arm_w / head_h #0.3-0.5
         armh_head = arm_h / head_h #0.75-1.25
 
-        grades = {"legs_head": evaluate(legs_head, 3,    4,    0, 10, 0.4),
-                  "legs_foot": evaluate(legs_foot, 1.75, 2.25, 0, 10, 0.4),
-                  "foot_head": evaluate(foot_head, 5.5,  6.5,  0, 10, 0.4),
+        grades = {"legs_head": evaluate(legs_head, 3,    4,    0, 15, 0.4),
+                  "legs_foot": evaluate(legs_foot, 1.75, 2.25, 0, 15, 0.4),
+                  "foot_head": evaluate(foot_head, 5.5,  6.5,  0, 20, 0.4),
                   "shou_head": evaluate(shou_head, 1.5,  2,    0, 10, 0.4),
                   "armw_head": evaluate(armw_head, 0.3,  0.5,  0, 10, 0.4),
                   "armh_head": evaluate(armh_head, 0.75, 1.25, 0, 10, 0.4)}
 
-        Label(window, text="Legs/head: " + str(round(grades["legs_head"], 2)) + "/10").pack()
-        Label(window, text="Leg/foot: " + str(round(grades["legs_foot"], 2)) + "/10").pack()
-        Label(window, text="Body/head: " + str(round(grades["foot_head"], 2)) + "/10").pack()
+        Label(window, text="Body/head: " + str(round(grades["foot_head"], 2)) + "/20").pack()
+        Label(window, text="Torso/head: " + str(round(grades["legs_head"], 2)) + "/15").pack()
+        Label(window, text="Leg/foot: " + str(round(grades["legs_foot"], 2)) + "/15").pack()
         Label(window, text="Shoulders/head: " + str(round(grades["shou_head"], 2)) + "/10").pack()
         Label(window, text="Arm width/head: " + str(round(grades["armw_head"], 2)) + "/10").pack()
         Label(window, text="Arm length/head: "  + str(round(grades["armh_head"], 2)) + "/10").pack()
