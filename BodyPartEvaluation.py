@@ -2,6 +2,7 @@ from roboflow import Roboflow
 import os
 import supervision as sv
 import cv2
+from tkinter import *
 
 class BodyPartEvaluation:
     def __init__(self, image_path):
@@ -33,6 +34,16 @@ class BodyPartEvaluation:
         result = model.predict(self.image_path, confidence=50).json()
         labels = [item["class"] for item in result["predictions"]]
         detections = sv.Detections.from_inference(result)
+    
+        self.translations = {
+            "kafa" : "head",
+            "govde": "shoulders",
+            "kol"  : "arm",
+            "bacak": "legs",
+            "ayak" : "foot"
+        }
+
+        labels1 = [self.translations[i] for i in labels]
 
         label_annotator = sv.LabelAnnotator()
         mask_annotator = sv.MaskAnnotator()
@@ -40,15 +51,7 @@ class BodyPartEvaluation:
         annotated_image = mask_annotator.annotate(
             scene=image, detections=detections)
         annotated_image = label_annotator.annotate(
-            scene=annotated_image, detections=detections, labels=labels)
-
-        self.translations = {
-            "kafa" : "head",
-            "govde": "body",
-            "kol"  : "arm",
-            "bacak": "legs",
-            "ayak" : "foot"
-        }
+            scene=annotated_image, detections=detections, labels=labels1)
 
         evaluate = self.evaluate
         data = []
@@ -73,11 +76,15 @@ class BodyPartEvaluation:
                         x2 = point["x"]
                 arm_w = x2 - x1 if x2 - x1 > 0 else x1 - x2
                 arm_h, arm_x, arm_y = h, x, y
-        
+
+        window = Tk()
+        window.title("Evaluation")
+        window.geometry("200x150")
+
         legs_head = (legs_y - (head_y - (head_h/2))) / head_h #3-4
         legs_foot = ((foot_y + (foot_h / 2)) - (legs_y + (legs_h / 2)))/head_h #1.75-2.25
         foot_head = ((foot_y + foot_h) - (head_y - head_h)) / head_h #5.5-6.5
-        shou_head = body_w / head_h #1.5-2 
+        shou_head = shoulders_w / head_h #1.5-2 
         armw_head = arm_w / head_h #0.3-0.5
         armh_head = arm_h / head_h #0.75-1.25
 
@@ -88,14 +95,21 @@ class BodyPartEvaluation:
                   "armw_head": evaluate(armw_head, 0.3,  0.5,  0, 10, 0.4),
                   "armh_head": evaluate(armh_head, 0.75, 1.25, 0, 10, 0.4)}
 
-        cv2.putText(annotated_image, f"Bacak/kafa: " + str(round(grades["legs_head"], 2)) + "/10", (10, 30),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        cv2.putText(annotated_image, f"Bacak/ayak: " + str(round(grades["legs_foot"], 2)) + "/10", (10, 60),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        cv2.putText(annotated_image, f"Ayak/kafa: "  + str(round(grades["foot_head"], 2)) + "/10", (10, 90),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        cv2.putText(annotated_image, f"Omuz/kafa: "  + str(round(grades["shou_head"], 2)) + "/10", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        cv2.putText(annotated_image, f"Kol genislik/kafa: " + str(round(grades["armw_head"], 2)) + "/10", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
-        cv2.putText(annotated_image, f"Kol uzunluk/kafa: "  + str(round(grades["armh_head"], 2)) + "/10", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2)
+        Label(window, text="Legs/head: " + str(round(grades["legs_head"], 2)) + "/10").pack()
+        Label(window, text="Leg/foot: " + str(round(grades["legs_foot"], 2)) + "/10").pack()
+        Label(window, text="Body/head: " + str(round(grades["foot_head"], 2)) + "/10").pack()
+        Label(window, text="Shoulders/head: " + str(round(grades["shou_head"], 2)) + "/10").pack()
+        Label(window, text="Arm width/head: " + str(round(grades["armw_head"], 2)) + "/10").pack()
+        Label(window, text="Arm length/head: "  + str(round(grades["armh_head"], 2)) + "/10").pack()
+
+        cv2.line(annotated_image, (foot_x, foot_y+foot_h//2), (head_x, head_y-head_h//2), (0,200,0), 2)
 
         cv2.imshow("image", annotated_image)
+
+        cv2.setWindowTitle('image', 'Human Figure Evaluation') 
+
+        window.mainloop()
+
         cv2.waitKey(0) 
         cv2.destroyAllWindows()
         return 1
