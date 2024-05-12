@@ -423,35 +423,4 @@ class PerspectiveDrawingComponent:
 
         return result
 
-    def PrintFinalVerdict(self, results):
-        typographyList = []
-
-
-        # TODO: Move this method to PerspectiveShell.
-        for i in range(0,2):
-            if results[i] == 10:
-                typographyList.append(self.SCORING_HIGH)
-            else:
-                typographyList.append(self.SCORING_LOW)
-
-        for i in range(2,6):
-            if results[i] >= 15:
-                typographyList.append(self.SCORING_HIGH)
-            elif results[i] >= 7.5:
-                typographyList.append(self.SCORING_MEDIUM)
-            else:
-                typographyList.append(self.SCORING_LOW)
-
-
-        print(f"\n------------------ FINAL VERDICT ------------------")
-        print(f"{typographyList[0]}Criterion #1: " + str(results[0]) + "/10")
-        print(f"{typographyList[1]}Criterion #2: " + str(results[1]) + "/10")
-        print(f"{typographyList[2]}Criterion #3: " + str(results[2]) + "/20")
-        print(f"{typographyList[3]}Criterion #4: " + str(results[3]) + "/20")  
-        print(f"{typographyList[4]}Criterion #5: " + str(results[4]) + "/20")
-        print(f"{typographyList[5]}Criterion #6: " + str(results[5]) + "/20")
-        print(f"{self.FINISH}---------------------------------------------------\n")
-
-
-        input(self.PRIORTY_LOW + "# PROCESS COMPLETED SUCCESSFULLY. Press Enter To Return Back To File Selection..." + self.FINISH)
-        return 0
+        
