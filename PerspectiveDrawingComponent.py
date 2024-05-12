@@ -283,8 +283,6 @@ class PerspectiveDrawingComponent:
 
         criterionsData = profile[1]
 
-        print(criterionsData)
-
         # Criterions 1, 2, 3 and 6 need the vanishing point to function
         if (1 in criterionsData or 2 in criterionsData or 3 in criterionsData or 6 in criterionsData):
 

@@ -24,9 +24,7 @@ class PerspectiveShell:
     def LoadFile(self):
 
         text_input = input("\nPlease Drag And Drop A File Or Enter The Location Manually: (Type \"Return\" to return to the main shell.) \n\n")
-        
-        print(text_input)
-
+ 
         # A return of 100 means Return To Mode Selection.
         if text_input == "Return":
 
@@ -34,6 +32,7 @@ class PerspectiveShell:
 
         stringData = self.GetStringData(text_input)
 
+        # A return of 200 means Return To File Selection.
         if (stringData == 200):
 
             print("\n\033[31;3m# ERROR: Operation couldn't be completed. Returning to file selection.\033[0m \n")
@@ -95,8 +94,6 @@ class PerspectiveShell:
             
             profile[0] = criterionTags[0]["criterions-multiplier"]
             profile[1] = criterionTags[0]["criterions"]
-
-        print(profile)
 
         return profile
                     
