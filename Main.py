@@ -1,5 +1,6 @@
+from PerspectiveShell import PerspectiveShell
 import PerspectiveDrawingComponent
-import BodyPartEvaluation
+#import BodyPartEvaluation
 import sys
 
 def StartProjectShell():
@@ -18,7 +19,9 @@ def ModeSelect():
         print("\n\033[31;3m# Closing Program")
         sys.exit()
     elif directive == "Perspective Mode":
+
         StartPerspectiveMode()
+
     elif directive == "Body Parts Mode":
         StartBodyPartsMode()
     else:
@@ -33,17 +36,18 @@ def StartPerspectiveMode():
 
 def LoadFilePerspectiveMode():
 
-    path = input("\nPlease Drag And Drop A File Or Enter The Location Manually: (Type \"Return\" to return to the main shell.) \n\n")
-        
-    if path == "Return":
+    ps = PerspectiveShell()
+
+    process = ps.LoadFile()
+
+    if (process == 100):
+
         ModeSelect()
 
-    finalPath = path.strip("\"")
+    elif (process == 200):
 
-    process = pdc.ScoreCriterions(finalPath)
-
-    if (process == 0):
         LoadFilePerspectiveMode()
+
 
 def StartBodyPartsMode():
 
