@@ -166,9 +166,8 @@ class PerspectiveDrawingComponent:
             tiltAverage = totalTilt / linesTowardsVanishingPoint
 
         if tiltAverage > 1:
-            tiltAverage = 20
-        else:
-            tiltAverage *= 20
+            tiltAverage = 1
+
 
         return round(tiltAverage)
 
@@ -177,7 +176,7 @@ class PerspectiveDrawingComponent:
         verticalLines = 0
         horizontalLines = 0
 
-        finalScore = 5
+        finalScore = 0.25
 
         for line in lines:
             x1 = int(round(line[0][0]))
@@ -193,11 +192,11 @@ class PerspectiveDrawingComponent:
                 cv2.line(image, (x1, y1), (x2, y2), (0, 140, 255), 2)
         
         if verticalLines + horizontalLines > 700:
-            finalScore = 20
+            finalScore = 1
         elif verticalLines + horizontalLines > 500:
-            finalScore = 15
+            finalScore = 0.75
         elif verticalLines + horizontalLines > 300:
-            finalScore = 10
+            finalScore = 0.5
         
         return finalScore
 
@@ -223,13 +222,13 @@ class PerspectiveDrawingComponent:
         if 100 > deviation:
 
             if deviation > 75:
-                score = 5
+                score = 0.25
             elif deviation > 60:
-                score = 10
+                score = 0.5
             elif deviation > 45:
-                score = 15
+                score = 0.75
             elif deviation > 30:
-                score = 20
+                score = 1
 
         return score
 
@@ -263,85 +262,172 @@ class PerspectiveDrawingComponent:
                 (b, g, r) = cv2.mean(regionOfInterest)[:3]
                 colorValues.append(b + g + r)
 
-            score = 5
+            score = 0.25
 
             if colorValues[0] > colorValues[1] > colorValues[2] > colorValues[3]:
-                score = 20
+                score = 1
             elif colorValues[0] > colorValues[1] > colorValues[2] or colorValues[1] > colorValues[2] > colorValues[3]:
-                score = 15
+                score = 0.75
             elif colorValues[0] > colorValues[1] or colorValues[1] > colorValues[2] or colorValues[2] > colorValues[3]:
-                score = 10
+                score = 0.5
             
             params[2] = score
 
 
     # Main Methods
-    def ScoreCriterions(self, imagePath):
-        
-        if (os.path.isfile(imagePath) == False):
-            print("\n\033[31;3m# ERROR: Couldn't find the specified file. Returning to file selection.\033[0m \n")
-            return 0
+    def ScoreCriterions(self, imagePath, profile):
 
-        imageVanishing = cv2.imread(imagePath)
-        imagePerspective = cv2.imread(imagePath)
-        imageBalance = cv2.imread(imagePath)
-        imageLineSegmentDetector = cv2.imread(imagePath, 0)
+        if (cv2.imread(imagePath) is None or not os.path.isfile(imagePath)):
+            print("\n\033[31;3m# ERROR: Couldn't read or find the specified file.\033[0m \n")
+            return 100
 
-        if (imageVanishing is None):
-            print("\n\033[31;3m# ERROR: Couldn't read the specified file. Returning to file selection.\033[0m \n")
-            return 0
-        
-        houghLines = self.GetLinesHoughLinesP(imageVanishing)
-        vanishingPoint = self.FindVanishingPoint(houghLines)
+        criterionsData = profile[1]
 
-        segmentLines = self.GetLinesLineSegmentDetector(imageLineSegmentDetector)
+        print(criterionsData)
 
-        if (vanishingPoint is None):
-            criterion1 = 0
-            criterion2 = 0
-            criterion3 = 0
-            criterion6 = 0
-        else:
-            criterion1 = 10
-            criterion2 = 10
+        # Criterions 1, 2, 3 and 6 need the vanishing point to function
+        if (1 in criterionsData or 2 in criterionsData or 3 in criterionsData or 6 in criterionsData):
+
+            imageVanishingPoint = cv2.imread(imagePath)
+            houghLines = self.GetLinesHoughLinesP(imageVanishingPoint)
+            vanishingPoint = self.FindVanishingPoint(houghLines)
+
+        # Scoring for Criterion 1
+        if (1 in criterionsData):
+
+            if (vanishingPoint is None):
+                
+                criterion1 = 0
+
+            else:
+
+                criterion1 = 1
+
+        # Scoring for Criterion 2
+        if (2 in criterionsData):
+
+            if (vanishingPoint is None):
+
+                criterion2 = 0
+
+            else:
+
+                criterion2 = 1
+
+        # Scoring for Criterion 3
+        if (3 in criterionsData):
+
+            if (vanishingPoint is None):
+
+                criterion3 = 0
+
+            imageLineSegments = cv2.imread(imagePath, 0)
+            segmentLines = self.GetLinesLineSegmentDetector(imageLineSegments)
 
             if (segmentLines is not None):
-                criterion3 = self.FindTiltAverage(imageLineSegmentDetector, segmentLines, vanishingPoint)
+                
+                criterion3 = self.FindTiltAverage(imageLineSegments, segmentLines, vanishingPoint)
 
-            criterion6 = 0
-            cv2.circle(imagePerspective, (int(round(vanishingPoint[0])), int(round(vanishingPoint[1]))), 10, (0, 0, 255), 2)
-            params = [vanishingPoint, imagePerspective, criterion6]
-
-            cv2.imshow("Color Perspective",imagePerspective)
-            cv2.setMouseCallback("Color Perspective", self.FindColorPerpective, params)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-
-            if (params[2] is None):
-                criterion6 = 0
             else:
-                criterion6 = params[2]
+                
+                criterion3= 0
+
+        # Scoring for Criterion 4
+        if (4 in criterionsData):
+
+            imageLineSegments = cv2.imread(imagePath, 0)
+            segmentLines = self.GetLinesLineSegmentDetector(imageLineSegments)
+
+            if (segmentLines is None):
+            
+                criterion4 = 0
+            
+            else:
+
+                criterion4 = self.FindHorizontalAndVerticalLines(imageLineSegments, segmentLines)
+
+        # Scoring for Criterion 5
+        if (5 in criterionsData):
+
+            imageBalance = cv2.imread(imagePath)
+            criterion5 = self.FindLightDarkBalance(imageBalance)
+
+        # Scoring for Criterion 6
+        if (6 in criterionsData):
+
+            if (vanishingPoint is None):
+
+                criterion6 = 0
+
+            else:
+                imagePerspective = cv2.imread(imagePath)
+
+                criterion6 = 0
+                cv2.circle(imagePerspective, (int(round(vanishingPoint[0])), int(round(vanishingPoint[1]))), 10, (0, 0, 255), 2)
+                params = [vanishingPoint, imagePerspective, criterion6]
+
+                cv2.imshow("Color Perspective",imagePerspective)
+                cv2.setMouseCallback("Color Perspective", self.FindColorPerpective, params)
+                cv2.waitKey(0)
+                cv2.destroyAllWindows()
+
+                if (params[2] is None):
+                    criterion6 = 0
+                else:
+                    criterion6 = params[2]
                         
-            # TODO: Handle Criterion 6 here.
+        result = []
 
-        if (segmentLines is None):
-            criterion4 = 0
-        else:
-            criterion4 = self.FindHorizontalAndVerticalLines(imageLineSegmentDetector, segmentLines)
+        for i in criterionsData:
 
-        criterion5 = self.FindLightDarkBalance(imageBalance)
+            match i:
 
-        results = [criterion1, criterion2, criterion3, criterion4, criterion5, criterion6]
+                case 1:
+                    name = "Horizon Line Detection"
+                    point = criterion1
 
-        process = self.PrintFinalVerdict(results)
+                    result.append([name, point])
 
-        # TODO: Show Final Image Here
+                case 2:
+                    name = "Vanishing Point Detection"
+                    point = criterion2
 
-        return process
+                    result.append([name, point])
+
+                case 3:
+                    name = "Tilt Average"
+                    point = criterion3
+
+                    result.append([name, point])
+
+                case 4:
+                    name = "Orthogonal Lines Detection"
+                    point = criterion4
+
+                    result.append([name, point])
+
+                case 5:
+                    name = "Light-Dark Balance"
+                    point = criterion5
+
+                    result.append([name, point])
+
+                case 6:
+                    name = "Colour Perspective"
+                    point = criterion6
+
+                    result.append([name, point])
+
+                case _:
+                    print("Couldn't find desired Criterion. Skipping to the next one.")
+
+        return result
 
     def PrintFinalVerdict(self, results):
         typographyList = []
 
+
+        # TODO: Move this method to PerspectiveShell.
         for i in range(0,2):
             if results[i] == 10:
                 typographyList.append(self.SCORING_HIGH)
