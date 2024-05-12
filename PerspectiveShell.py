@@ -123,7 +123,7 @@ class PerspectiveShell:
         total = 0
         for i in results:
 
-            print(f"{typographyList[index]}{i[0]}: {str(i[1] * resultsMultipliers[index])} {self.FINISH}")
+            print(f"{typographyList[index]}{i[0]}: {str(i[1] * resultsMultipliers[index])}/{resultsMultipliers[index]} {self.FINISH}")
 
             total += i[1] * resultsMultipliers[index]
             index += 1

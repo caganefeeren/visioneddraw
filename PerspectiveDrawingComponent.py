@@ -169,7 +169,7 @@ class PerspectiveDrawingComponent:
             tiltAverage = 1
 
 
-        return round(tiltAverage)
+        return tiltAverage
 
     def FindHorizontalAndVerticalLines(self, image, lines):
         
