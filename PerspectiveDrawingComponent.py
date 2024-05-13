@@ -318,17 +318,20 @@ class PerspectiveDrawingComponent:
             if (vanishingPoint is None):
 
                 criterion3 = 0
-
-            imageLineSegments = cv2.imread(imagePath, 0)
-            segmentLines = self.GetLinesLineSegmentDetector(imageLineSegments)
-
-            if (segmentLines is not None):
-                
-                criterion3 = self.FindTiltAverage(imageLineSegments, segmentLines, vanishingPoint)
-
+            
             else:
-                
-                criterion3= 0
+
+                imageLineSegments = cv2.imread(imagePath, 0)
+                segmentLines = self.GetLinesLineSegmentDetector(imageLineSegments)
+
+                if (segmentLines is not None):
+                    
+                    criterion3 = self.FindTiltAverage(imageLineSegments, segmentLines, vanishingPoint)
+
+                else:
+                    
+                    criterion3= 0
+            
 
         # Scoring for Criterion 4
         if (4 in criterionsData):
@@ -353,16 +356,22 @@ class PerspectiveDrawingComponent:
         # Scoring for Criterion 6
         if (6 in criterionsData):
 
-            if (vanishingPoint is None):
+            imagePerspectiveRaw = cv2.imread(imagePath)
+
+            height, width, channels = imagePerspectiveRaw.shape
+
+            imagePerspective = cv2.resize(imagePerspectiveRaw, (int(width / 2), int(height / 2)))
+            houghLines = self.GetLinesHoughLinesP(imagePerspective)
+            colourPerspectivePoint = self.FindVanishingPoint(houghLines)
+
+            if (colourPerspectivePoint is None):
 
                 criterion6 = 0
 
             else:
-                imagePerspective = cv2.imread(imagePath)
-
                 criterion6 = 0
-                cv2.circle(imagePerspective, (int(round(vanishingPoint[0])), int(round(vanishingPoint[1]))), 10, (0, 0, 255), 2)
-                params = [vanishingPoint, imagePerspective, criterion6]
+                cv2.circle(imagePerspective, (int(round(colourPerspectivePoint[0])), int(round(colourPerspectivePoint[1]))), 10, (0, 0, 255), 2)
+                params = [colourPerspectivePoint, imagePerspective, criterion6]
 
                 cv2.imshow("Color Perspective",imagePerspective)
                 cv2.setMouseCallback("Color Perspective", self.FindColorPerpective, params)
