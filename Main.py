@@ -1,6 +1,6 @@
 from PerspectiveShell import PerspectiveShell
 import PerspectiveDrawingComponent
-#import BodyPartEvaluation
+import BodyPartEvaluation
 import sys
 
 def StartProjectShell():
@@ -13,7 +13,7 @@ def StartProjectShell():
 
 def ModeSelect():
 
-    directive = input("\nType \"Perpective Mode\" or \"Body Parts Mode\" to start the components. (Type \"Exit\" to exit.)\n\n")
+    directive = input("\nType \"Perspective Mode\" or \"Body Parts Mode\" to start the components. (Type \"Exit\" to exit.)\n\n")
 
     if directive == "Exit":
         print("\n\033[31;3m# Closing Program")
