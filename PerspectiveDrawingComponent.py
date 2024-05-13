@@ -360,7 +360,8 @@ class PerspectiveDrawingComponent:
 
             height, width, channels = imagePerspectiveRaw.shape
 
-            imagePerspective = cv2.resize(imagePerspectiveRaw, (int(width / 2), int(height / 2)))
+            # Be careful about multiplication problems.
+            imagePerspective = cv2.resize(imagePerspectiveRaw, (int(width / 4), int(height / 4)))
             houghLines = self.GetLinesHoughLinesP(imagePerspective)
             colourPerspectivePoint = self.FindVanishingPoint(houghLines)
 
