@@ -1,5 +1,5 @@
-from Perspective import PerspectiveShell
-from Perspective import PerspectiveComponent
+from Libraries import PerspectiveShell
+from Libraries import PerspectiveComponent
 
 import BodyPartEvaluation
 import sys
@@ -48,7 +48,6 @@ def LoadFilePerspectiveMode():
     elif (process == 200):
 
         LoadFilePerspectiveMode()
-
 
 def StartBodyPartsMode():
 

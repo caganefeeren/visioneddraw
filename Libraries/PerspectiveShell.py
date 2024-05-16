@@ -1,4 +1,4 @@
-from PerspectiveComponent import PerspectiveComponent
+from Libraries import PerspectiveComponent
 import re
 import json
 
