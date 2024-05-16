@@ -3,7 +3,7 @@ import os
 import math
 import numpy
 
-class PerspectiveDrawingComponent:
+class PerspectiveComponent:
 
     # COLOR INFORMATION
     PRIORTY_HIGH = "\033[31;3m"

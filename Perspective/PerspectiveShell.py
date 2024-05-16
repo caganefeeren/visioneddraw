@@ -1,4 +1,4 @@
-from PerspectiveDrawingComponent import PerspectiveDrawingComponent
+from PerspectiveComponent import PerspectiveComponent
 import re
 import json
 
@@ -19,7 +19,7 @@ class PerspectiveShell:
     SCORING_LOW = "\033[31;1m"
     FINISH = "\033[0m" 
 
-    pdc = PerspectiveDrawingComponent()
+    pdc = PerspectiveComponent()
 
     def LoadFile(self):
 

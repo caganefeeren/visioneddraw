@@ -1,5 +1,6 @@
-from PerspectiveShell import PerspectiveShell
-import PerspectiveDrawingComponent
+from Perspective import PerspectiveShell
+from Perspective import PerspectiveComponent
+
 import BodyPartEvaluation
 import sys
 
@@ -36,7 +37,7 @@ def StartPerspectiveMode():
 
 def LoadFilePerspectiveMode():
 
-    ps = PerspectiveShell()
+    ps = PerspectiveShell.PerspectiveShell()
 
     process = ps.LoadFile()
 
@@ -64,6 +65,6 @@ def StartBodyPartsMode():
     if (process == 1):
         StartBodyPartsMode()
 
-pdc = PerspectiveDrawingComponent.PerspectiveDrawingComponent()
+pc = PerspectiveComponent.PerspectiveComponent()
 
 StartProjectShell()
