@@ -4,5 +4,6 @@
     "legs_foot": 15,
     "shou_head": 10,
     "armw_head": 10,
-    "armh_head": 10
+    "armh_head": 10,
+    "light_dark": 20
 }
