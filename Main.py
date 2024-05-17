@@ -26,7 +26,7 @@ def ModeSelect():
     elif directive == "Body Parts Mode":
         StartBodyPartsMode()
     else:
-        print("\033[31;3m# ERROR: Couldn't find the specified mode, returning to mode select.\033[0m \n\n")
+        print("\n\033[31;3m# ERROR: Couldn't find the specified mode, returning to mode select.\033[0m \n\n")
         ModeSelect()
 
 def StartPerspectiveMode():
