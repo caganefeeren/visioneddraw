@@ -19,7 +19,7 @@ class PerspectiveShell:
     SCORING_LOW = "\033[31;1m"
     FINISH = "\033[0m" 
 
-    pdc = PerspectiveComponent()
+    pc = PerspectiveComponent.PerspectiveComponent()
 
     def LoadFile(self):
 
@@ -42,7 +42,7 @@ class PerspectiveShell:
 
         finalPath = str(stringData[0][0]).strip("\"")
 
-        results = self.pdc.ScoreCriterions(finalPath, profile)
+        results = self.pc.ScoreCriterions(finalPath, profile)
 
         if (results == 100 or results is None):
 

@@ -162,6 +162,8 @@ class PerspectiveComponent:
                 totalTilt += abs(tilt) 
                 linesTowardsVanishingPoint += 1
 
+                cv2.line(image, (x1,y1), (x2,y2), (0, 0, 255), 5)
+
         if linesTowardsVanishingPoint > 0:
             tiltAverage = totalTilt / linesTowardsVanishingPoint
 
@@ -186,10 +188,10 @@ class PerspectiveComponent:
 
             if abs(x1 - x2) < self.HORIZONTAL_VERTICAL_TH:
                 verticalLines += 1
-                cv2.line(image, (x1, y1), (x2, y2), (0, 140, 255), 2)
+                cv2.line(image, (x1, y1), (x2, y2), (255, 100, 0), 2)
             elif abs(y1 - y2) < self.HORIZONTAL_VERTICAL_TH: 
                 horizontalLines += 1
-                cv2.line(image, (x1, y1), (x2, y2), (0, 140, 255), 2)
+                cv2.line(image, (x1, y1), (x2, y2), (255, 100, 0), 2)
         
         if verticalLines + horizontalLines > 700:
             finalScore = 1
@@ -273,7 +275,6 @@ class PerspectiveComponent:
             
             params[2] = score
 
-
     # Main Methods
     def ScoreCriterions(self, imagePath, profile):
 
@@ -293,6 +294,8 @@ class PerspectiveComponent:
         # Scoring for Criterion 1
         if (1 in criterionsData):
 
+            imgHorizonLine = cv2.imread(imagePath)
+
             if (vanishingPoint is None):
                 
                 criterion1 = 0
@@ -301,8 +304,15 @@ class PerspectiveComponent:
 
                 criterion1 = 1
 
+                #cv2.line(imgHorizonLine, (0, int(round(vanishingPoint[1]))),
+                #          (imgHorizonLine.shape[1], int(round(vanishingPoint[1]))), (0, 255, 0), 5)
+                
+                #cv2.imwrite("./Captures/HorizonLine.jpg", imgHorizonLine)
+
         # Scoring for Criterion 2
         if (2 in criterionsData):
+
+            imgVanishingPoint = cv2.imread(imagePath)
 
             if (vanishingPoint is None):
 
@@ -311,6 +321,11 @@ class PerspectiveComponent:
             else:
 
                 criterion2 = 1
+
+                #cv2.circle(imgVanishingPoint, (int(round(vanishingPoint[0])), int(round(vanishingPoint[1]))),
+                #            50, (0, 255, 0), -1)
+                
+                #cv2.imwrite("./Captures/VanishingPoint.jpg", imgVanishingPoint)
 
         # Scoring for Criterion 3
         if (3 in criterionsData):
@@ -324,20 +339,24 @@ class PerspectiveComponent:
                 imageLineSegments = cv2.imread(imagePath, 0)
                 segmentLines = self.GetLinesLineSegmentDetector(imageLineSegments)
 
-                if (segmentLines is not None):
-                    
-                    criterion3 = self.FindTiltAverage(imageLineSegments, segmentLines, vanishingPoint)
+                imageTiltAverage = cv2.imread(imagePath)
 
+                if (segmentLines is None):
+
+                    criterion3= 0
+                    
                 else:
                     
-                    criterion3= 0
-            
+                    criterion3 = self.FindTiltAverage(imageTiltAverage, segmentLines, vanishingPoint)
 
+            #cv2.imwrite("./Captures/TiltAverage.jpg", imageTiltAverage)
+            
         # Scoring for Criterion 4
         if (4 in criterionsData):
-
             imageLineSegments = cv2.imread(imagePath, 0)
             segmentLines = self.GetLinesLineSegmentDetector(imageLineSegments)
+
+            imageHorizontalVertical = cv2.imread(imagePath)
 
             if (segmentLines is None):
             
@@ -345,10 +364,14 @@ class PerspectiveComponent:
             
             else:
 
-                criterion4 = self.FindHorizontalAndVerticalLines(imageLineSegments, segmentLines)
+                criterion4 = self.FindHorizontalAndVerticalLines(imageHorizontalVertical, segmentLines)
 
+            #cv2.imwrite("./Captures/OrthogonalLines.jpg", imageHorizontalVertical)
+            
         # Scoring for Criterion 5
         if (5 in criterionsData):
+            #imgBalance = cv2.imread(imagePath, 0)
+            #cv2.imwrite("./Captures/Balance.jpg", imgBalance)
 
             imageBalance = cv2.imread(imagePath)
             criterion5 = self.FindLightDarkBalance(imageBalance)
@@ -371,7 +394,7 @@ class PerspectiveComponent:
 
             else:
                 criterion6 = 0
-                cv2.circle(imagePerspective, (int(round(colourPerspectivePoint[0])), int(round(colourPerspectivePoint[1]))), 10, (0, 0, 255), 2)
+                cv2.circle(imagePerspective, (int(round(colourPerspectivePoint[0])), int(round(colourPerspectivePoint[1]))), 10, (0, 255, 0), 2)
                 params = [colourPerspectivePoint, imagePerspective, criterion6]
 
                 cv2.imshow("Color Perspective",imagePerspective)
