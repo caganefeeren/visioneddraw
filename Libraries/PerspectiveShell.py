@@ -4,7 +4,7 @@ import json
 
 class PerspectiveShell:
     # CONFIGURATION INFORMATION
-    TAG_CONF = "PerspectiveConfiguration.json"
+    TAG_CONF = "Config/PerspectiveConfiguration.json"
 
     # REGEX INFORMATION
     PATH = "\"[^\"]*\"" 
