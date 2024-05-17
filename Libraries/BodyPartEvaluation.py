@@ -84,7 +84,7 @@ class BodyPartEvaluation:
         armw_head = arm_w / head_h #0.3-0.5
         armh_head = arm_h / head_h #0.75-1.25
 
-        with open("Config/BodyPartEvalConfig.json", "r") as file:
+        with open("BodyPartEvalConfig.json", "r") as file:
             json_data = json.load(file)
             total_possible = 0
             for value in json_data.values():
@@ -95,9 +95,9 @@ class BodyPartEvaluation:
                   "legs_foot": evaluate(legs_foot, 1.75, 2.25, 0, json_data["legs_foot"],  0.4),
                   "shou_head": evaluate(shou_head, 1.5,  2,    0, json_data["shou_head"], 0.4),
                   "armw_head": evaluate(armw_head, 0.3,  0.5,  0, json_data["armw_head"], 0.4),
-                  "armh_head": evaluate(armh_head, 0.75, 1.25, 0, json_data["armh_head"], 0.4)}
+                  "armh_head": evaluate(armh_head, 0.75, 1.25, 0, json_data["armh_head"], 0.4),}
         
-        total = 0
+        total = 20
         for value in grades.values():
             total += value
 
@@ -108,6 +108,7 @@ class BodyPartEvaluation:
         print("Shoulders/head: " + str(round(grades["shou_head"], 2)) + "/" + str(json_data["shou_head"]))
         print("Arm width/head: " + str(round(grades["armw_head"], 2)) + "/" + str(json_data["armw_head"]))
         print("Arm length/head: "  + str(round(grades["armh_head"], 2)) + "/" + str(json_data["armh_head"]))
+        print("Light/dark balance: "  + str(round(self.FindLightDarkBalance()*json_data["light_dark"], 2)) + "/" + str(json_data["light_dark"]))
         print("TOTAL: "  + str(round(total, 2)) + "/" + str(total_possible))
         print("----------------------------------------------------\n")
 
@@ -120,6 +121,38 @@ class BodyPartEvaluation:
         cv2.destroyAllWindows()
         return 1
     
+    def FindLightDarkBalance(self):
+
+        grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        grayHistogram = cv2.calcHist([grayscaleImage], [0], None, [256], [0, 256])
+
+        totalValue = 0
+        totalPixels = 0
+
+        for i in range(1, len(grayHistogram) + 1):
+
+            totalValue += (i - 1) * grayHistogram[i - 1][0]
+            totalPixels += grayHistogram[i - 1][0]
+
+        result = totalValue / totalPixels
+        deviation = abs(128 - result)
+
+        score = 0
+
+        if 100 > deviation:
+
+            if deviation > 75:
+                score = 0.25
+            elif deviation > 60:
+                score = 0.5
+            elif deviation > 45:
+                score = 0.75
+            elif deviation > 30:
+                score = 1
+
+        return score
+
     def evaluate(self, ratio, min_ratio, max_ratio, min_score, max_score, allowed_deviation): #all parameters except score are integer percentage values
         deviation = ((min_ratio + max_ratio) / 2) * allowed_deviation
         if min_ratio <= ratio and ratio <= max_ratio:
