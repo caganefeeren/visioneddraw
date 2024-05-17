@@ -1,7 +1,7 @@
 from Libraries import PerspectiveShell
 from Libraries import PerspectiveComponent
+from Libraries import BodyPartEvaluation
 
-import BodyPartEvaluation
 import sys
 
 def StartProjectShell():
