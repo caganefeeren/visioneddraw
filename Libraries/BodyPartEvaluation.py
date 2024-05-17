@@ -1,8 +1,8 @@
 from roboflow import Roboflow
-import os
 import supervision as sv
+import os
 import cv2
-from tkinter import *
+import json
 
 class BodyPartEvaluation:
     def __init__(self, image_path):
@@ -77,38 +77,44 @@ class BodyPartEvaluation:
                 arm_w = x2 - x1 if x2 - x1 > 0 else x1 - x2
                 arm_h, arm_x, arm_y = h, x, y
 
-        window = Tk()
-        window.title("Evaluation")
-        window.geometry("200x150")
-
-        legs_head = (legs_y - (head_y - (head_h/2))) / head_h #3-4
+        torso_head = (legs_y - (head_y - (head_h/2))) / head_h #3-4
         legs_foot = ((foot_y + (foot_h / 2)) - (legs_y + (legs_h / 2)))/head_h #1.75-2.25
-        foot_head = ((foot_y + foot_h) - (head_y - head_h)) / head_h #5.5-6.5
+        body_head = ((foot_y + foot_h) - (head_y - head_h)) / head_h #5.5-6.5
         shou_head = shoulders_w / head_h #1.5-2 
         armw_head = arm_w / head_h #0.3-0.5
         armh_head = arm_h / head_h #0.75-1.25
 
-        grades = {"legs_head": evaluate(legs_head, 3,    4,    0, 15, 0.4),
-                  "legs_foot": evaluate(legs_foot, 1.75, 2.25, 0, 15, 0.4),
-                  "foot_head": evaluate(foot_head, 5.5,  6.5,  0, 20, 0.4),
-                  "shou_head": evaluate(shou_head, 1.5,  2,    0, 10, 0.4),
-                  "armw_head": evaluate(armw_head, 0.3,  0.5,  0, 10, 0.4),
-                  "armh_head": evaluate(armh_head, 0.75, 1.25, 0, 10, 0.4)}
+        with open("Config/BodyPartEvalConfig.json", "r") as file:
+            json_data = json.load(file)
+            total_possible = 0
+            for value in json_data.values():
+                total_possible += value
 
-        Label(window, text="Body/head: " + str(round(grades["foot_head"], 2)) + "/20").pack()
-        Label(window, text="Torso/head: " + str(round(grades["legs_head"], 2)) + "/15").pack()
-        Label(window, text="Leg/foot: " + str(round(grades["legs_foot"], 2)) + "/15").pack()
-        Label(window, text="Shoulders/head: " + str(round(grades["shou_head"], 2)) + "/10").pack()
-        Label(window, text="Arm width/head: " + str(round(grades["armw_head"], 2)) + "/10").pack()
-        Label(window, text="Arm length/head: "  + str(round(grades["armh_head"], 2)) + "/10").pack()
+        grades = {"body_head": evaluate(body_head, 5.5,  6.5,  0, json_data["body_head"], 0.4),
+                  "torso_head": evaluate(torso_head, 3,  4,    0, json_data["torso_head"], 0.4),
+                  "legs_foot": evaluate(legs_foot, 1.75, 2.25, 0, json_data["legs_foot"],  0.4),
+                  "shou_head": evaluate(shou_head, 1.5,  2,    0, json_data["shou_head"], 0.4),
+                  "armw_head": evaluate(armw_head, 0.3,  0.5,  0, json_data["armw_head"], 0.4),
+                  "armh_head": evaluate(armh_head, 0.75, 1.25, 0, json_data["armh_head"], 0.4)}
+        
+        total = 0
+        for value in grades.values():
+            total += value
+
+        print(f"\n------------------ FINAL VERDICT ------------------")
+        print("Body/head: " + str(round(grades["body_head"], 2)) + "/" + str(json_data["body_head"]))
+        print("Torso/head: " + str(round(grades["torso_head"], 2)) + "/" + str(json_data["torso_head"]))
+        print("Leg/foot: " + str(round(grades["legs_foot"], 2)) + "/" + str(json_data["legs_foot"]))
+        print("Shoulders/head: " + str(round(grades["shou_head"], 2)) + "/" + str(json_data["shou_head"]))
+        print("Arm width/head: " + str(round(grades["armw_head"], 2)) + "/" + str(json_data["armw_head"]))
+        print("Arm length/head: "  + str(round(grades["armh_head"], 2)) + "/" + str(json_data["armh_head"]))
+        print("TOTAL: "  + str(round(total, 2)) + "/" + str(total_possible))
+        print("----------------------------------------------------\n")
+
 
         cv2.line(annotated_image, (foot_x, foot_y+foot_h//2), (head_x, head_y-head_h//2), (0,200,0), 2)
 
-        cv2.imshow("image", annotated_image)
-
-        cv2.setWindowTitle('image', 'Human Figure Evaluation') 
-
-        window.mainloop()
+        cv2.imshow("Human Figure Evaluation", annotated_image)
 
         cv2.waitKey(0) 
         cv2.destroyAllWindows()
