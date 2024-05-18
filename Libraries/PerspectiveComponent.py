@@ -414,25 +414,25 @@ class PerspectiveComponent:
             match i:
 
                 case 1:
-                    name = "Horizon Line Detection"
+                    name = "Horizon Line"
                     point = criterion1
 
                     result.append([name, point])
 
                 case 2:
-                    name = "Vanishing Point Detection"
+                    name = "Vanishing Point"
                     point = criterion2
 
                     result.append([name, point])
 
                 case 3:
-                    name = "Tilt Average"
+                    name = "Orhogonal Lines"
                     point = criterion3
 
                     result.append([name, point])
 
                 case 4:
-                    name = "Orthogonal Lines Detection"
+                    name = "Horizontal-Vertical Lines"
                     point = criterion4
 
                     result.append([name, point])
