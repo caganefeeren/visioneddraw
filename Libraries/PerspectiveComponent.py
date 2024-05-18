@@ -453,5 +453,3 @@ class PerspectiveComponent:
                     print("Couldn't find desired Criterion. Skipping to the next one.")
 
         return result
-
-        
