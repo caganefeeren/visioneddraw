@@ -284,6 +284,8 @@ class PerspectiveComponent:
 
         criterionsData = profile[1]
 
+        imageFinal = cv2.imread(imagePath)
+
         # Criterions 1, 2, 3 and 6 need the vanishing point to function
         if (1 in criterionsData or 2 in criterionsData or 3 in criterionsData or 6 in criterionsData):
 
@@ -304,8 +306,7 @@ class PerspectiveComponent:
 
                 criterion1 = 1
 
-                #cv2.line(imgHorizonLine, (0, int(round(vanishingPoint[1]))),
-                #          (imgHorizonLine.shape[1], int(round(vanishingPoint[1]))), (0, 255, 0), 5)
+                cv2.line(imageFinal, (0, int(round(vanishingPoint[1]))), (imgHorizonLine.shape[1], int(round(vanishingPoint[1]))), (0, 255, 0), 5)
                 
                 #cv2.imwrite("./Captures/HorizonLine.jpg", imgHorizonLine)
 
@@ -322,8 +323,7 @@ class PerspectiveComponent:
 
                 criterion2 = 1
 
-                #cv2.circle(imgVanishingPoint, (int(round(vanishingPoint[0])), int(round(vanishingPoint[1]))),
-                #            50, (0, 255, 0), -1)
+                cv2.circle(imageFinal, (int(round(vanishingPoint[0])), int(round(vanishingPoint[1]))), 50, (0, 255, 0), -1)
                 
                 #cv2.imwrite("./Captures/VanishingPoint.jpg", imgVanishingPoint)
 
@@ -349,6 +349,8 @@ class PerspectiveComponent:
                     
                     criterion3 = self.FindTiltAverage(imageTiltAverage, segmentLines, vanishingPoint)
 
+                    self.FindTiltAverage(imageFinal, segmentLines, vanishingPoint)
+
             #cv2.imwrite("./Captures/TiltAverage.jpg", imageTiltAverage)
             
         # Scoring for Criterion 4
@@ -365,6 +367,8 @@ class PerspectiveComponent:
             else:
 
                 criterion4 = self.FindHorizontalAndVerticalLines(imageHorizontalVertical, segmentLines)
+
+                self.FindHorizontalAndVerticalLines(imageFinal, segmentLines)
 
             #cv2.imwrite("./Captures/OrthogonalLines.jpg", imageHorizontalVertical)
             
@@ -451,5 +455,8 @@ class PerspectiveComponent:
 
                 case _:
                     print("Couldn't find desired Criterion. Skipping to the next one.")
+
+        filename = os.path.basename(imagePath)
+        cv2.imwrite("./Captures/"+ filename, imageFinal)
 
         return result
