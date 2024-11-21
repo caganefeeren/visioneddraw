@@ -204,9 +204,9 @@ class PerspectiveComponent:
 
     def FindLightDarkBalance(self, image):
 
-        grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        #grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        grayHistogram = cv2.calcHist([grayscaleImage], [0], None, [256], [0, 256])
+        grayHistogram = cv2.calcHist([image], [0], None, [256], [0, 256])
 
         totalValue = 0
         totalPixels = 0
