@@ -430,7 +430,7 @@ class PerspectiveComponent:
                     result.append([name, point])
 
                 case 3:
-                    name = "Orhogonal Lines"
+                    name = "Orthogonal Lines"
                     point = criterion3
 
                     result.append([name, point])
