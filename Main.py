@@ -5,7 +5,7 @@ from Libraries import BodyPartEvaluation
 import sys
 
 def StartProjectShell():
-    print("Welcome to VisionEdDraw!")
+    print("Welcome to CritiArt-Ed!")
 
     print("\n\033[31;3m# This is demo software, some features may not function as intended. \033[0m")
     print("\033[33;3m# Take the photos in a well-lit enviorment for fair grading.\033[0m")
