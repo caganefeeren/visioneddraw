@@ -39,7 +39,7 @@ def LoadFilePerspectiveMode():
 
     ps = PerspectiveShell.PerspectiveShell()
 
-    process = ps.LoadFile()
+    process = ps.LoadFileOrDirectory()
 
     if (process == 100):
 

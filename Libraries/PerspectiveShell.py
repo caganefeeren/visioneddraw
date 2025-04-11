@@ -1,6 +1,8 @@
 from Libraries import PerspectiveComponent
 import re
 import json
+import os
+import time
 
 class PerspectiveShell:
     # CONFIGURATION INFORMATION
@@ -21,9 +23,9 @@ class PerspectiveShell:
 
     pc = PerspectiveComponent.PerspectiveComponent()
 
-    def LoadFile(self):
+    def LoadFileOrDirectory(self):
 
-        text_input = input("\nPlease Drag And Drop A File Or Enter The Location Manually: (Type \"Return\" to return to the main shell.) \n\n")
+        text_input = input("\nPlease Drag And Drop A File Or Directory: (Type \"Return\" to return to the main shell.) \n\n")
  
         # A return of 100 means Return To Mode Selection.
         if text_input == "Return":
@@ -37,22 +39,64 @@ class PerspectiveShell:
 
             print("\n\033[31;3m# ERROR: Operation couldn't be completed. Returning to file selection.\033[0m \n")
             return 200
+        
+        # Execute file operations.
+        if (stringData[2] == True):
+
+            directoryTimerStart = time.perf_counter()
+
+            directoryStringData = self.GetStringDataDirectory(stringData)
+
+            if directoryStringData == 200 or directoryStringData == 100:
+                return
+
+            for fileData in directoryStringData:
+               
+               self.PerformFileOperations(fileData, True)
+
+            directoryTimerFinish = time.perf_counter()
+
+            directoryTimer = directoryTimerFinish - directoryTimerStart
+            directoryTimer = round(directoryTimer, 3)
+            directoryTimer = directoryTimer * pow(10, 3)
+            directoryTimer = int(directoryTimer)
+                   
+            input(self.PRIORTY_LOW + "# PROCESS COMPLETED. " + str(len(directoryStringData)) + " items located in \"" + stringData[0] + "\" were processed in " + str(directoryTimer) + " ms." + " Press Enter To Return Back To File Selection... " + self.FINISH + "\n")
+            self.LoadFileOrDirectory()
+
+        
+        else:
+            
+            self.PerformFileOperations(stringData)
+
+    def PerformFileOperations(self, stringData, isFromDirectory = False):
+
+        fileTimerStart = time.perf_counter()
 
         profile = self.CreateProfile(stringData)
 
-        finalPath = str(stringData[0][0]).strip("\"")
+        finalPath = str(stringData[0]).strip("\"")
+
+        print("\n" + finalPath)
 
         results = self.pc.ScoreCriterions(finalPath, profile)
-
         if (results == 100 or results is None):
 
             print("\n\033[31;3m# ERROR: Operation couldn't be completed. Returning to file selection.\033[0m \n")
             return 100
 
-        return self.PrintFinalVerdict(results, profile[0])
+        fileTimerFinish = time.perf_counter()
+
+        fileTimer = fileTimerFinish - fileTimerStart
+        fileTimer = round(fileTimer, 3)
+        fileTimer = fileTimer * pow(10, 3)
+        fileTimer = int(fileTimer)
+
+        return self.PrintFinalVerdict(results, profile[0], isFromDirectory, fileTimer)
+    
+
 
     def GetStringData(self, text):
-
         regex_path = self.PATH
         regex_tags = self.TAGS
 
@@ -60,15 +104,54 @@ class PerspectiveShell:
         tags = re.findall(regex_tags, text)
 
         if (not path):
-
             print("\n\033[31;3m# ERROR: Operation couldn't be completed. Returning to file selection.\033[0m \n")
             return 200
+        elif (len(path) > 1):
+            print("\n\033[31;3m# ERROR: Multiple possible file locations entered. Returning to file selection.\033[0m \n")
+            return 200
 
+        isDirectory = False
 
-        result = [path, tags]
+        # Modify shell arguments if the input is a directory.
+        path = path[0].strip("\"")
+
+        if (os.path.isdir(path)):
+            isDirectory = True
+
+        result = [path, tags, isDirectory]
 
         return result
         
+    def GetStringDataDirectory(self, directoryData):
+
+        # Check if any files exist within the directory.
+        dirList = []
+        for x in (os.listdir(directoryData[0])):
+            
+            if (os.path.isfile(directoryData[0] + os.path.sep + x)):
+
+                dirList.append(directoryData[0] + os.path.sep + x)
+
+        if (not dirList):
+            print("\n\033[31;3m# ERROR: Provided directory was empty. Returning to file selection.\033[0m \n")
+            return 200
+
+        supportedFileList = []
+        for file in dirList:
+            if self.pc.CheckFileCompatibility(file):
+                supportedFileList.append(file)
+
+        if (not supportedFileList):
+            print("\n\033[31;3m# ERROR: None of the files in the provided directory are compatible. Returning to file selection.\033[0m \n")
+            return 200
+        
+        directoryStringData = []
+        for file in supportedFileList:
+            regexFile = "\"" + file + "\""
+            directoryStringData.append(self.GetStringData(regexFile))
+
+        return directoryStringData
+       
     def CreateProfile(self, data):
 
         with open(self.TAG_CONF, "r") as file:
@@ -97,7 +180,7 @@ class PerspectiveShell:
 
         return profile
                     
-    def PrintFinalVerdict(self, results, resultsMultipliers):
+    def PrintFinalVerdict(self, results, resultsMultipliers, isFromDirectory, totalTime):
 
         typographyList = []
 
@@ -146,7 +229,15 @@ class PerspectiveShell:
 
         print(f"{self.FINISH}---------------------------------------------------\n")
 
-        input(self.PRIORTY_LOW + "# PROCESS COMPLETED SUCCESSFULLY. Press Enter To Return Back To File Selection..." + self.FINISH)
+        if (isFromDirectory):
+            
+            print(self.PRIORTY_LOW + "# PROCESS COMPLETED SUCCESSFULLY in " + str(totalTime) + " ms." + self.FINISH + "\n")
+        
+        else:
+        
+            input(self.PRIORTY_LOW + "# PROCESS COMPLETED SUCCESSFULLY. Press Enter To Return Back To File Selection..." + self.FINISH)
+
+            self.LoadFileOrDirectory()
         
         return 200
         

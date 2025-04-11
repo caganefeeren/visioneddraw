@@ -460,3 +460,9 @@ class PerspectiveComponent:
         cv2.imwrite("./Captures/"+ filename, imageFinal)
 
         return result
+
+    # Extra Methods
+    def CheckFileCompatibility(self, filePath):
+
+        return cv2.haveImageReader(filePath)
+        
