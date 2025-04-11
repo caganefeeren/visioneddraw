@@ -150,6 +150,11 @@ class PerspectiveShell:
             regexFile = "\"" + file + "\""
             directoryStringData.append(self.GetStringData(regexFile))
 
+        for fileData in directoryStringData:
+            # Inherit tags from the directory query.
+            fileData[1] = directoryData[1]
+
+
         return directoryStringData
        
     def CreateProfile(self, data):
